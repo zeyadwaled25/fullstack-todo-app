@@ -5,6 +5,8 @@ import { REGISTER_FORM } from "../data";
 import axiosInstance from "../config/axois.config";
 import toast, { Toaster } from 'react-hot-toast';
 import { useState } from "react";
+import { AxiosError } from "axios";
+import { IErrorResponse } from "../interfaces";
 
 interface IFormInput {
   username: string,
@@ -35,7 +37,8 @@ const  RegisterPage = () => {
         });
       }
     } catch (error) {
-      toast.error('Something went wrong!', {
+      const errorObj = error as AxiosError<IErrorResponse>      
+      toast.error(`${errorObj.response?.data.error.message}`, {
         position: 'top-left',
         duration: 4000,
         style: {
@@ -73,7 +76,9 @@ const  RegisterPage = () => {
         <form className="space-y-4" onSubmit={handleSubmit(onSubmit)}>
           {renderRegisterForm}
 
-          <Button fullWidth>{isLoading ? "Loading..." : "Register"}</Button>
+          <Button fullWidth isLoading={isLoading}>
+            {isLoading ? "Loading..." : "Register"}
+          </Button>
 
         </form>
       </div>

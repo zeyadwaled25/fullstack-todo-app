@@ -34,24 +34,16 @@ const buttonVariants = cva(
   }
 );
 
-interface ButtonProps
-  extends HTMLAttributes<HTMLButtonElement>,
-    VariantProps<typeof buttonVariants> {
-  children: ReactNode;
-  isLoading?: boolean;
-  type?: "submit" | "button" | "reset";
+interface ButtonProps extends
+    HTMLAttributes<HTMLButtonElement>,
+    VariantProps<typeof buttonVariants>
+  {
+    children: ReactNode;
+    isLoading?: boolean;
+    type?: "submit" | "button" | "reset";
 }
 
-const Button = ({
-  variant,
-  size,
-  fullWidth,
-  isLoading,
-  className,
-  children,
-  type,
-  ...props
-}: ButtonProps) => {
+const Button = ({variant, size, fullWidth, isLoading, className, children, type, ...props }: ButtonProps) => {
   return (
     <button
       type={type}

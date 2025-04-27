@@ -11,3 +11,9 @@ export interface IRegisterInput {
   errorRequired: string;
   errorValidation: string;
 }
+
+export interface IErrorResponse {
+  error: {
+    message?: string;
+  }
+}
