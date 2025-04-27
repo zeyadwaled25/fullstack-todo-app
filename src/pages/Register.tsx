@@ -2,6 +2,9 @@ import Button from "../components/ui/Button";
 import Input from "../components/ui/Input";
 import { useForm, SubmitHandler } from "react-hook-form"
 import { REGISTER_FORM } from "../data";
+import axiosInstance from "../config/axois.config";
+import toast, { Toaster } from 'react-hot-toast';
+import { useState } from "react";
 
 interface IFormInput {
   username: string,
@@ -10,12 +13,40 @@ interface IFormInput {
 }
 
 const  RegisterPage = () => {
+  const [isLoading, setIsLoading] = useState(false)
+
   // ** Handler
   const { register, formState: { errors }, handleSubmit } = useForm<IFormInput>()
-  const onSubmit: SubmitHandler<IFormInput> = (data) => {
+  const onSubmit: SubmitHandler<IFormInput> = async (data) => {
     console.log(data)
+    setIsLoading(true)
 
-    
+    try {
+      const {status} = await axiosInstance.post("/auth/local/register", data)
+      if (status === 200) {
+        toast.success('You will navigate to the login page after 4 seconds to login!', {
+          position: 'top-left',
+          duration: 4000,
+          style: {
+            background: '#333',
+            color: '#fff',
+            width: 'fit-content',
+          },
+        });
+      }
+    } catch (error) {
+      toast.error('Something went wrong!', {
+        position: 'top-left',
+        duration: 4000,
+        style: {
+          background: '#333',
+          color: '#fff',
+          width: 'fit-content',
+        },
+      });
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   // ** Render
@@ -34,17 +65,20 @@ const  RegisterPage = () => {
   ))
 
   return (
-    <div className="max-w-md mx-auto">
-      <h2 className="mb-4 text-3xl font-semibold text-center">
-        Register to get access!
-      </h2>
-      <form className="space-y-4" onSubmit={handleSubmit(onSubmit)}>
-        {renderRegisterForm}
+    <>
+      <div className="max-w-md mx-auto">
+        <h2 className="mb-4 text-3xl font-semibold text-center">
+          Register to get access!
+        </h2>
+        <form className="space-y-4" onSubmit={handleSubmit(onSubmit)}>
+          {renderRegisterForm}
 
-        <Button fullWidth>Register</Button>
+          <Button fullWidth>{isLoading ? "Loading..." : "Register"}</Button>
 
-      </form>
-    </div>
+        </form>
+      </div>
+      <Toaster />
+    </>
   );
 };
 
