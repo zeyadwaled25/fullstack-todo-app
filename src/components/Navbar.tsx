@@ -4,12 +4,13 @@ const Navbar = () => {
   const { pathname } = useLocation();
   const userDataString = localStorage.getItem("loggedInUser");
   const userData = userDataString ? JSON.parse(userDataString) : null;
-  const onLogout = () => {
+  const onLogoutHandler = () => {
     localStorage.removeItem("loggedInUser");
     setTimeout(() => {
       location.replace(pathname);
     }, 1500);
-  };
+  }
+  
   return (
     <nav className="max-w-lg mx-auto mt-7 mb-20 px-3 py-5 rounded-md">
       <ul className="flex items-center justify-between">
@@ -26,7 +27,7 @@ const Navbar = () => {
             </li>
             <button
               className="bg-indigo-500 text-white p-2 rounded-md cursor-pointer"
-              onClick={onLogout}
+              onClick={onLogoutHandler}
             >
               Logout
             </button>
