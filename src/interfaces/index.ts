@@ -11,6 +11,19 @@ export interface IRegisterInput {
   errorRequired: string;
   errorValidation: string;
 }
+export interface ILoginInput {
+  name: "identifier" | "password";
+  type: string;
+  placeholder: string;
+  validation: {
+    required: boolean;
+    minLength?: number;
+    maxLength?: number;
+    pattern?: RegExp;
+  };
+  errorRequired: string;
+  errorValidation: string;
+}
 
 export interface IErrorResponse {
   error: {

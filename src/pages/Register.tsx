@@ -20,7 +20,6 @@ const  RegisterPage = () => {
   // ** Handler
   const { register, formState: { errors }, handleSubmit } = useForm<IFormInput>()
   const onSubmit: SubmitHandler<IFormInput> = async (data) => {
-    console.log(data)
     setIsLoading(true)
 
     try {
