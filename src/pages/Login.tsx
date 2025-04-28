@@ -22,17 +22,22 @@ const LoginPage = () => {
     setIsLoading(true)
 
     try {
-      const {status} = await axiosInstance.post("/auth/local", data)
+      const { status, data: resData } = await axiosInstance.post("/auth/local", data)
       if (status === 200) {
-        toast.success('You will navigate to the Home page after 4 seconds!', {
+        toast.success('You will navigate to the Home page after 2 seconds!', {
           position: 'top-left',
-          duration: 4000,
+          duration: 1500,
           style: {
             background: '#333',
             color: '#fff',
             width: 'fit-content',
           },
         });
+
+        localStorage.setItem("loggedInUser", JSON.stringify(resData))
+        setTimeout(() => {
+          location.replace('/')
+        }, 2000)
       }
     } catch (error) {
       const errorObj = error as AxiosError<IErrorResponse>      
