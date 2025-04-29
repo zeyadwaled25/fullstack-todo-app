@@ -1,20 +1,19 @@
 import { useQuery } from "@tanstack/react-query";
 import Button from "./ui/Button"
 import axiosInstance from "../config/axois.config";
+import useAuthenticatedQuery from "./hooks/useAuthenticatedQuery";
 
 const TodoList = () => {
   const userDataString = localStorage.getItem("loggedInUser")
   const userData = userDataString ? JSON.parse(userDataString) : null;
 
-  const { isLoading, data } = useQuery({
-    queryKey: ['todos'],
-    queryFn: async () => {
-      const {data} = await axiosInstance.get("/users/me?populate=todos", {
-        headers: {
-          Authorization: `Bearer ${userData?.jwt}`,
-        }
-      })
-      return data.todos;
+  const { isLoading, data } = useAuthenticatedQuery({
+    queryKey: ["todos"],
+    url: "/users/me?populate=todos",
+    config: {
+      headers: {
+        Authorization: `Bearer ${userData?.jwt}`
+      }
     }
   })
 
