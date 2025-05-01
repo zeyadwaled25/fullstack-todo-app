@@ -35,7 +35,7 @@ const TodoList = () => {
   })
 
   const { isLoading, data } = useAuthenticatedQuery({
-    queryKey: ["todos"],
+    queryKey: ["todoList", `${todoToEdit.id}`],
     url: "/users/me?populate=todos",
     config: {
       headers: {
@@ -168,7 +168,6 @@ const TodoList = () => {
               variant="cancel" 
               onClick={onCloseEditModal}
               type="button"
-              isLoading={isSubmitting}
             >
               Cancel
             </Button>
