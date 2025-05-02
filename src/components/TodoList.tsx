@@ -26,6 +26,7 @@ const TodoList = () => {
     description: ""
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isOpenConfirmModal, setIsOpenConfirmModal] = useState(false)
 
   const { register, handleSubmit, formState: { errors }, reset, setValue } = useForm<IFormInput>({
     defaultValues: {
@@ -63,6 +64,10 @@ const TodoList = () => {
     setValue("description", todo.description ?? "")
     setIsEditModalOpen(true)
   }
+  const closeConfirmModal = () => setIsOpenConfirmModal(false)
+  const openConfirmModal = () => setIsOpenConfirmModal(true)
+
+
   const onSubmit: SubmitHandler<IFormInput> = async (formData) => {
     setIsSubmitting(true)
     try {
@@ -110,13 +115,15 @@ const TodoList = () => {
           <p className="w-full font-semibold">{todo.id} - {todo.title}</p>
           <div className="flex items-center justify-end w-full space-x-3">
             <Button size={"sm"} onClick={() => onOpenEditModal(todo)}>Edit</Button>
-            <Button variant={"danger"} size={"sm"}>
+            <Button variant={"danger"} size={"sm"} onClick={() => openConfirmModal()}>
               Remove
             </Button>
           </div>
         </div>
       ))
       : <h3 className="text-center text-gray-500">No todos found!</h3>}
+
+      {/* Edit Modal */}
       <Modal key={todoToEdit.id} isOpen={isEditModalOpen} onClose={onCloseEditModal} title="Edit this todo">
         <form onSubmit={handleSubmit(onSubmit)}>
         <div className="space-y-3">
@@ -173,6 +180,21 @@ const TodoList = () => {
             </Button>
           </div>
         </form>
+      </Modal>
+
+      {/* Remove Modal */}
+      <Modal isOpen={isOpenConfirmModal} onClose={closeConfirmModal}
+        title="Are you sure you want to remove this Todo from your Store?"
+        description="Deleting this Todo will remove it permanently from your inventory. Any associated data, sales history, and other related information will also be deleted. Please make sure this is the intended action."
+      >
+        <div className="flex items-center space-x-3">
+          <Button variant={'danger'} onClick={() => {}}>
+            Yes, remove
+          </Button>
+          <Button variant={'cancel'} onClick={closeConfirmModal}>
+            Cancel
+          </Button>
+        </div>
       </Modal>
     </div>
   )
