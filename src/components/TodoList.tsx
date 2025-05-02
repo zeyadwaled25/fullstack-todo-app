@@ -9,6 +9,7 @@ import axiosInstance from "../config/axois.config";
 import toast from "react-hot-toast";
 import { AxiosError } from "axios";
 import { useForm, SubmitHandler } from "react-hook-form";
+import Skeleton from "./ui/Skeleton";
 
 interface IFormInput {
   title: string;
@@ -35,7 +36,7 @@ const TodoList = () => {
     }
   })
 
-  const { isLoading, data } = useAuthenticatedQuery({
+  const { isLoading, data, refetch } = useAuthenticatedQuery({
     queryKey: ["todoList", `${todoToEdit.id}`],
     url: "/users/me?populate=todos",
     config: {
@@ -45,7 +46,11 @@ const TodoList = () => {
     }
   })
 
-  if (isLoading) return <h3>Loading...</h3>
+  if (isLoading) return (
+    <div className="space-y-2 p-3">
+      {Array.from({ length: 5 }).map((_, index) => <Skeleton key={index} />)}
+    </div>
+  )
 
   //  ** Handler
   const onCloseEditModal = () => {
@@ -65,9 +70,46 @@ const TodoList = () => {
     setIsEditModalOpen(true)
   }
   const closeConfirmModal = () => setIsOpenConfirmModal(false)
-  const openConfirmModal = () => setIsOpenConfirmModal(true)
+  const openConfirmModal = (todo: ITodo) => {
+    setTodoToEdit(todo)
+    setIsOpenConfirmModal(true)
+  }
 
-
+  const removeHandler = async () => {
+    setIsSubmitting(true)
+    try {
+      await axiosInstance.delete(`/todos/${todoToEdit.documentId}`, {
+        headers: {
+          Authorization: `Bearer ${userData?.jwt}`
+        }
+      }).then(() => {
+        toast.success("Todo removed successfully!", {
+          position: 'top-left',
+          duration: 2000,
+          style: {
+            background: '#333',
+            color: '#fff',
+            width: 'fit-content',
+          },
+        });
+        closeConfirmModal()
+        refetch()
+      })
+    } catch (error) {
+      const errorObj = error as AxiosError<IErrorResponse>
+      toast.error(`${errorObj.response?.data.error.message}`, {
+        position: 'top-left',
+        duration: 2000,
+        style: {
+          background: '#333',
+          color: '#fff',
+          width: 'fit-content',
+        },
+      });
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
   const onSubmit: SubmitHandler<IFormInput> = async (formData) => {
     setIsSubmitting(true)
     try {
@@ -83,7 +125,7 @@ const TodoList = () => {
       }).then(() => {
         toast.success("Todo updated successfully!", {
           position: 'top-left',
-          duration: 4000,
+          duration: 2000,
           style: {
             background: '#333',
             color: '#fff',
@@ -96,7 +138,7 @@ const TodoList = () => {
       const errorObj = error as AxiosError<IErrorResponse>      
       toast.error(`${errorObj.response?.data.error.message}`, {
         position: 'top-left',
-        duration: 4000,
+        duration: 2000,
         style: {
           background: '#333',
           color: '#fff',
@@ -115,7 +157,7 @@ const TodoList = () => {
           <p className="w-full font-semibold">{todo.id} - {todo.title}</p>
           <div className="flex items-center justify-end w-full space-x-3">
             <Button size={"sm"} onClick={() => onOpenEditModal(todo)}>Edit</Button>
-            <Button variant={"danger"} size={"sm"} onClick={() => openConfirmModal()}>
+            <Button variant={"danger"} size={"sm"} onClick={() => openConfirmModal(todo)}>
               Remove
             </Button>
           </div>
@@ -188,7 +230,7 @@ const TodoList = () => {
         description="Deleting this Todo will remove it permanently from your inventory. Any associated data, sales history, and other related information will also be deleted. Please make sure this is the intended action."
       >
         <div className="flex items-center space-x-3">
-          <Button variant={'danger'} onClick={() => {}}>
+          <Button variant={'danger'} onClick={removeHandler} isLoading={isSubmitting}>
             Yes, remove
           </Button>
           <Button variant={'cancel'} onClick={closeConfirmModal}>
