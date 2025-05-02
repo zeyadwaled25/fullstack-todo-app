@@ -34,6 +34,8 @@ const TodoList = () => {
     description: ""
   })
   const [isAddSubmitted, setIsAddSubmitted] = useState(false);
+  const [queryVersion, setQueryVersion] = useState(0);
+
   const getAddErrors = () => {
     const errors: { title?: string; description?: string } = {};
     if (!todoToAdd.title) {
@@ -57,7 +59,7 @@ const TodoList = () => {
   })
 
   const { isLoading, data, refetch } = useAuthenticatedQuery({
-    queryKey: ["todoList", `${todoToEdit.id}`],
+    queryKey: ["todoList", `${queryVersion}`],
     url: "/users/me?populate=todos",
     config: {
       headers: {
@@ -119,7 +121,7 @@ const TodoList = () => {
   const removeHandler = async () => {
     setIsSubmitting(true)
     try {
-      await axiosInstance.delete(`/todos/${todoToEdit.documentId}`, {
+      const { status } = await axiosInstance.delete(`/todos/${todoToEdit.documentId}`, {
         headers: {
           Authorization: `Bearer ${userData?.jwt}`
         }
@@ -133,8 +135,10 @@ const TodoList = () => {
             width: 'fit-content',
           },
         });
-        closeConfirmModal()
-        refetch()
+        if (status === 200) {
+          setQueryVersion(prev => prev + 1)
+          closeConfirmModal()
+        }
       })
     } catch (error) {
       const errorObj = error as AxiosError<IErrorResponse>
@@ -166,7 +170,7 @@ const TodoList = () => {
     }
     
     try {
-      await axiosInstance.post(`/todos`, {
+      const { status } = await axiosInstance.post(`/todos`, {
         data: {
           title: todoToAdd.title,
           description: todoToAdd.description
@@ -185,8 +189,11 @@ const TodoList = () => {
             width: 'fit-content',
           },
         });
-        onCloseAddModal()
-        refetch();
+        if (status === 200) {
+          setQueryVersion(prev => prev + 1)
+          closeConfirmModal()
+          refetch();
+        }
       })
     } catch (error) {
       const errorObj = error as AxiosError<IErrorResponse>      
@@ -207,7 +214,7 @@ const TodoList = () => {
   const onSubmit: SubmitHandler<IFormInput> = async (formData) => {
     setIsSubmitting(true)
     try {
-      await axiosInstance.put(`/todos/${todoToEdit.documentId}`, {
+      const { status } = await axiosInstance.put(`/todos/${todoToEdit.documentId}`, {
         data: {
           title: formData.title,
           description: formData.description
@@ -226,7 +233,10 @@ const TodoList = () => {
             width: 'fit-content',
           },
         });
-        onCloseEditModal()
+        if (status === 200) {
+          setQueryVersion(prev => prev + 1)
+          onCloseEditModal()
+        }
       })
     } catch (error) {
       const errorObj = error as AxiosError<IErrorResponse>      
