@@ -37,3 +37,7 @@ export interface ITodo {
   title: string;
   description?: string;
 }
+export interface IAddTodo {
+  title: string;
+  description: string;
+}

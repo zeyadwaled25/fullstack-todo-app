@@ -2,9 +2,9 @@ import Button from "./ui/Button"
 import useAuthenticatedQuery from "./hooks/useAuthenticatedQuery";
 import Modal from "./ui/Modal";
 import Input from "./ui/Input";
-import { useState } from "react";
+import { ChangeEvent, FormEvent, useState } from "react";
 import Textarea from "./ui/Textarea";
-import { IErrorResponse, ITodo } from "../interfaces";
+import { IAddTodo, IErrorResponse, ITodo } from "../interfaces";
 import axiosInstance from "../config/axois.config";
 import toast from "react-hot-toast";
 import { AxiosError } from "axios";
@@ -29,10 +29,25 @@ const TodoList = () => {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isOpenConfirmModal, setIsOpenConfirmModal] = useState(false)
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
-  const [todoToAdd, setTodoToAdd] = useState({
+  const [todoToAdd, setTodoToAdd] = useState<IAddTodo>({
     title: "",
     description: ""
   })
+  const [isAddSubmitted, setIsAddSubmitted] = useState(false);
+  const getAddErrors = () => {
+    const errors: { title?: string; description?: string } = {};
+    if (!todoToAdd.title) {
+      errors.title = "Title is required";
+    } else if (todoToAdd.title.length < 3) {
+      errors.title = "Title must be at least 3 characters";
+    }
+    if (!todoToAdd.description) {
+      errors.description = "Description is required";
+    } else if (todoToAdd.description.length < 5) {
+      errors.description = "Description must be at least 5 characters";
+    }
+    return errors;
+  };
 
   const { register, handleSubmit, formState: { errors }, reset, setValue } = useForm<IFormInput>({
     defaultValues: {
@@ -65,9 +80,10 @@ const TodoList = () => {
       title: "",
       description: ""
     })
+    setIsAddSubmitted(false)
   }
   const onOpenAddModal = () => {
-    setIsAddModalOpen(true) 
+    setIsAddModalOpen(true)
   }
   const onCloseEditModal = () => {
     setIsEditModalOpen(false)
@@ -91,6 +107,15 @@ const TodoList = () => {
     setIsOpenConfirmModal(true)
   }
 
+  const onChangeAddTodoHandler = (
+    evt: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    const { name, value } = evt.target;
+    setTodoToAdd({
+      ...todoToAdd,
+      [name]: value,
+    });
+  };
   const removeHandler = async () => {
     setIsSubmitting(true)
     try {
@@ -126,8 +151,20 @@ const TodoList = () => {
       setIsSubmitting(false)
     }
   }
-  const onAddSubmit: SubmitHandler<IFormInput> = async () => {
+  const onAddSubmit = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
     setIsSubmitting(true)
+    setIsAddSubmitted(true)
+
+    const errors = getAddErrors();
+    // If there are errors, don't submit
+    if (errors.title || errors.description) {
+      setTimeout(() => {
+        setIsSubmitting(false)
+      }, 250);
+      return;
+    }
+    
     try {
       await axiosInstance.post(`/todos`, {
         data: {
@@ -139,7 +176,7 @@ const TodoList = () => {
           Authorization: `Bearer ${userData?.jwt}`
         }
       }).then(() => {
-        toast.success("Todo updated successfully!", {
+        toast.success("Todo Added successfully!", {
           position: 'top-left',
           duration: 2000,
           style: {
@@ -149,6 +186,7 @@ const TodoList = () => {
           },
         });
         onCloseAddModal()
+        refetch();
       })
     } catch (error) {
       const errorObj = error as AxiosError<IErrorResponse>      
@@ -163,6 +201,7 @@ const TodoList = () => {
       });
     } finally {
       setIsSubmitting(false)
+      setIsAddSubmitted(false)
     }
   }
   const onSubmit: SubmitHandler<IFormInput> = async (formData) => {
@@ -225,54 +264,60 @@ const TodoList = () => {
 
       {/* Add Modal */}
       <Modal isOpen={isAddModalOpen} onClose={onCloseAddModal} title="Add a new todo">
-        <form onSubmit={handleSubmit(onAddSubmit)}>
-        <div className="space-y-3">
+        <form onSubmit={onAddSubmit}>
+          <div className="space-y-3">
             <div>
-              <Input 
-                {...register("title", { 
-                  required: "Title is required",
-                  minLength: { 
-                    value: 3, 
-                    message: "Title must be at least 3 characters" 
-                  }
-                })}
+              <Input
+                name="title"
+                value={todoToAdd.title}
+                onChange={onChangeAddTodoHandler}
                 placeholder="Todo title"
-                aria-invalid={errors.title ? "true" : "false"}
               />
-              {errors.title && (
-                <p role="alert" className="text-red-500 text-sm mt-1">{errors.title.message}</p>
+              {isAddSubmitted && (
+                <>
+                  {(!todoToAdd.title || todoToAdd.title.length < 3) && (
+                    <p role="alert" className="text-red-500 text-sm mt-1">
+                      {!todoToAdd.title
+                        ? "Title is required"
+                        : "Title must be at least 3 characters"}
+                    </p>
+                  )}
+                </>
               )}
             </div>
             <div>
-              <Textarea 
-                {...register("description", { 
-                  required: "Description is required",
-                  minLength: { 
-                    value: 5, 
-                    message: "Description must be at least 5 characters" 
-                  }
-                })}
+              <Textarea
+                name="description"
+                value={todoToAdd.description}
+                onChange={onChangeAddTodoHandler}
                 placeholder="Todo description"
-                aria-invalid={errors.description ? "true" : "false"}
               />
-              {errors.description && (
-                <p role="alert" className="text-red-500 text-sm mt-1">{errors.description.message}</p>
+              {isAddSubmitted && (
+                <>
+                  {(!todoToAdd.description || todoToAdd.description.length < 5) && (
+                    <p role="alert" className="text-red-500 text-sm mt-1">
+                      {!todoToAdd.description
+                        ? "Description is required"
+                        : "Description must be at least 5 characters"}
+                    </p>
+                  )}
+                </>
               )}
             </div>
           </div>
           <div className="flex items-center justify-end w-full space-x-3">
-            <Button 
-              className="mt-4" 
-              fullWidth 
+            <Button
+              className="mt-4"
+              fullWidth
               type="submit"
               isLoading={isSubmitting}
             >
               {isSubmitting ? "Adding..." : "Add"}
             </Button>
-            <Button 
-              className="mt-4" 
-              fullWidth 
-              variant="cancel" 
+            <Button
+              className="mt-4"
+              fullWidth
+              variant="cancel"
               onClick={onCloseAddModal}
               type="button"
             >
