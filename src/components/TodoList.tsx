@@ -263,30 +263,22 @@ const TodoList = () => {
             Authorization: `Bearer ${userData?.jwt}`
           }
         }).then(() => {
-          toast.success("Todo Added successfully!", {
-            position: 'top-left',
-            duration: 2000,
-            style: {
-              background: '#333',
-              color: '#fff',
-              width: 'fit-content',
-            },
-          });
           refetch();
         })
       } catch (error) {
         const errorObj = error as AxiosError<IErrorResponse>      
-        toast.error(`${errorObj.response?.data.error.message}`, {
-          position: 'top-left',
-          duration: 2000,
-          style: {
-            background: '#333',
-            color: '#fff',
-            width: 'fit-content',
-          },
-        });
+        console.log(errorObj.response?.data.error.message)
       }
     }
+    toast.success("All Todos Added successfully!", {
+      position: 'top-left',
+      duration: 2000,
+      style: {
+        background: '#333',
+        color: '#fff',
+        width: 'fit-content',
+      },
+    });
   }
 
   return (
