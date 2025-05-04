@@ -10,6 +10,7 @@ import { AxiosError } from "axios";
 import { useForm, SubmitHandler } from "react-hook-form";
 import Skeleton from "./ui/Skeleton";
 import useCustomQuery from "./hooks/useCustomQuery";
+import { faker } from '@faker-js/faker';
 
 interface IFormInput {
   title: string;
@@ -248,10 +249,55 @@ const TodoList = () => {
     }
   }
 
+  //  ** Generate Todo
+  const onGenerateTodo = async () => {
+    for (let i = 0; i < 100; i++) {
+      try {
+        await axiosInstance.post(`/todos`, {
+          data: {
+            title: faker.word.words(3),
+            description: faker.lorem.paragraph(),
+          }
+        }, {
+          headers: {
+            Authorization: `Bearer ${userData?.jwt}`
+          }
+        }).then(() => {
+          toast.success("Todo Added successfully!", {
+            position: 'top-left',
+            duration: 2000,
+            style: {
+              background: '#333',
+              color: '#fff',
+              width: 'fit-content',
+            },
+          });
+          refetch();
+        })
+      } catch (error) {
+        const errorObj = error as AxiosError<IErrorResponse>      
+        toast.error(`${errorObj.response?.data.error.message}`, {
+          position: 'top-left',
+          duration: 2000,
+          style: {
+            background: '#333',
+            color: '#fff',
+            width: 'fit-content',
+          },
+        });
+      }
+    }
+  }
+
   return (
     <div className="space-y-1">
-      <div className="w-fit me-auto mb-5">
-        <Button size={"sm"} onClick={onOpenAddModal}>Add New Todo</Button>
+      <div className="flex justify-center items-center space-x-2 mb-6">
+        <div className="w-fit">
+          <Button size={"sm"} onClick={onOpenAddModal}>Add New Todo</Button>
+        </div>
+        <div className="w-fit">
+          <Button size={"sm"} onClick={onGenerateTodo}>Generate Todo</Button>
+        </div>
       </div>
       {data.length ? data.map((todo: ITodo) => (
         <div key={todo.id} className="flex items-center justify-between hover:bg-gray-100 duration-300 p-3 rounded-md even:bg-gray-100">
