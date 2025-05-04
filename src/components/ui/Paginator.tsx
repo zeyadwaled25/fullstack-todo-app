@@ -3,16 +3,29 @@ interface IProps {
   pageCount: number;
   onClickPrev: () => void;
   onClickNext: () => void;
+  total: number;
+  isLoading: boolean;
 }
 
-const Paginator = ({ page=1, pageCount=3, onClickPrev, onClickNext }: IProps) => {
+const Paginator = ({ page, pageCount, onClickPrev, onClickNext, total, isLoading }: IProps) => {
   return (
-    <div className="flex justify-center mx-auto">
+    <div className="flex justify-center mx-auto my-10">
+      <p className="text-sm text-gray-600 mx-3 my-auto">
+        Page{" "}
+        <span className="mx-1 font-semibold text-gray-900 text-md-1">
+          {page}
+        </span>{" "}
+        to
+        <span className="mx-1 font-smeibold text-gray-900">{pageCount}</span> of
+        <span className="mx-1 font-semibold text-gray-900">{total}</span>{" "}
+        Records
+      </p>
+
       <button
         type="button"
         className="bg-gray-800 text-white rounded-l-md border-r border-gray-100 py-2 hover:bg-indigo-700 duration-300 hover:text-white px-3
         disabled:bg-gray-400 disabled:hover:bg-gray-400 disabled:cursor-not-allowed"
-        disabled={page === 1}
+        disabled={page === 1 || isLoading}
         onClick={() => onClickPrev()}
       >
         <div className="flex flex-row align-middle">
@@ -31,7 +44,7 @@ const Paginator = ({ page=1, pageCount=3, onClickPrev, onClickNext }: IProps) =>
         type="button"
         className="bg-gray-800 text-white rounded-r-md py-2 border-l border-gray-200 hover:bg-indigo-700 duration-300 hover:text-white px-3
         disabled:bg-gray-400 disabled:hover:bg-gray-400 disabled:cursor-not-allowed"
-        disabled={page === pageCount}
+        disabled={page === pageCount || isLoading}
         onClick={() => onClickNext()}
         >
         <div className="flex flex-row align-middle">

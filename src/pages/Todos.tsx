@@ -10,9 +10,9 @@ import { ITodo } from "../interfaces";
     const userData = userDataString ? JSON.parse(userDataString) : null;
     const [page, setPage] = useState<number>(1);
 
-    const { isLoading, data } = useCustomQuery({
-      queryKey: ["paginatedTodos", `${page}`],
-      url: "/todos",
+    const { isLoading, data, isFetching } = useCustomQuery({
+      queryKey: [`todos-page-${page}`],
+      url: `/todos?pagination[pageSize]=25&pagination[page]=${page}`,
       config: {
         headers: {
           Authorization: `Bearer ${userData?.jwt}`
@@ -41,9 +41,14 @@ import { ITodo } from "../interfaces";
         </div>
       ))
       : <h3 className="text-center text-gray-500">No todos found!</h3>}
-      <div className="mt-5">
-        <Paginator page={page} pageCount={3} onClickPrev={handlePrev} onClickNext={handleNext} />
-      </div>
+      <Paginator
+        page={page}
+        pageCount={data.meta.pagination.pageCount}
+        total={data.meta.pagination.total}
+        isLoading={isLoading || isFetching}
+        onClickPrev={handlePrev}
+        onClickNext={handleNext}
+      />
     </>
   );
 };
