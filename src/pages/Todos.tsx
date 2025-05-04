@@ -1,4 +1,5 @@
 import useCustomQuery from "../components/hooks/useCustomQuery";
+import Paginator from "../components/ui/Paginator";
 import Skeleton from "../components/ui/Skeleton";
 import { ITodo } from "../interfaces";
 
@@ -31,6 +32,7 @@ import { ITodo } from "../interfaces";
         </div>
       ))
       : <h3 className="text-center text-gray-500">No todos found!</h3>}
+      <Paginator />
     </>
   );
 };
