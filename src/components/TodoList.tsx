@@ -1,5 +1,4 @@
 import Button from "./ui/Button"
-import useAuthenticatedQuery from "./hooks/useAuthenticatedQuery";
 import Modal from "./ui/Modal";
 import Input from "./ui/Input";
 import { ChangeEvent, FormEvent, useState } from "react";
@@ -10,6 +9,7 @@ import toast from "react-hot-toast";
 import { AxiosError } from "axios";
 import { useForm, SubmitHandler } from "react-hook-form";
 import Skeleton from "./ui/Skeleton";
+import useCustomQuery from "./hooks/useCustomQuery";
 
 interface IFormInput {
   title: string;
@@ -58,7 +58,7 @@ const TodoList = () => {
     }
   })
 
-  const { isLoading, data, refetch } = useAuthenticatedQuery({
+  const { isLoading, data, refetch } = useCustomQuery({
     queryKey: ["todoList", `${queryVersion}`],
     url: "/users/me?populate=todos",
     config: {
@@ -121,7 +121,7 @@ const TodoList = () => {
   const removeHandler = async () => {
     setIsSubmitting(true)
     try {
-      const { status } = await axiosInstance.delete(`/todos/${todoToEdit.documentId}`, {
+      await axiosInstance.delete(`/todos/${todoToEdit.documentId}`, {
         headers: {
           Authorization: `Bearer ${userData?.jwt}`
         }
@@ -135,10 +135,8 @@ const TodoList = () => {
             width: 'fit-content',
           },
         });
-        if (status === 200) {
-          setQueryVersion(prev => prev + 1)
-          closeConfirmModal()
-        }
+        setQueryVersion(prev => prev + 1)
+        closeConfirmModal()
       })
     } catch (error) {
       const errorObj = error as AxiosError<IErrorResponse>
@@ -155,7 +153,7 @@ const TodoList = () => {
       setIsSubmitting(false)
     }
   }
-  const onAddSubmit = async (e: FormEvent<HTMLFormElement>) => {
+  const onSubmitAddTodo = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setIsSubmitting(true)
     setIsAddSubmitted(true)
@@ -170,10 +168,10 @@ const TodoList = () => {
     }
     
     try {
-      const { status } = await axiosInstance.post(`/todos`, {
+      await axiosInstance.post(`/todos`, {
         data: {
           title: todoToAdd.title,
-          description: todoToAdd.description
+          description: todoToAdd.description,
         }
       }, {
         headers: {
@@ -189,11 +187,9 @@ const TodoList = () => {
             width: 'fit-content',
           },
         });
-        if (status === 200) {
-          setQueryVersion(prev => prev + 1)
-          closeConfirmModal()
-          refetch();
-        }
+        setQueryVersion(prev => prev + 1)
+        onCloseAddModal()
+        refetch();
       })
     } catch (error) {
       const errorObj = error as AxiosError<IErrorResponse>      
@@ -211,10 +207,10 @@ const TodoList = () => {
       setIsAddSubmitted(false)
     }
   }
-  const onSubmit: SubmitHandler<IFormInput> = async (formData) => {
+  const onSubmitEditTodo: SubmitHandler<IFormInput> = async (formData) => {
     setIsSubmitting(true)
     try {
-      const { status } = await axiosInstance.put(`/todos/${todoToEdit.documentId}`, {
+      await axiosInstance.put(`/todos/${todoToEdit.documentId}`, {
         data: {
           title: formData.title,
           description: formData.description
@@ -233,10 +229,8 @@ const TodoList = () => {
             width: 'fit-content',
           },
         });
-        if (status === 200) {
-          setQueryVersion(prev => prev + 1)
-          onCloseEditModal()
-        }
+        setQueryVersion(prev => prev + 1)
+        onCloseEditModal()
       })
     } catch (error) {
       const errorObj = error as AxiosError<IErrorResponse>      
@@ -274,7 +268,7 @@ const TodoList = () => {
 
       {/* Add Modal */}
       <Modal isOpen={isAddModalOpen} onClose={onCloseAddModal} title="Add a new todo">
-        <form onSubmit={onAddSubmit}>
+        <form onSubmit={onSubmitAddTodo}>
           <div className="space-y-3">
             <div>
               <Input
@@ -339,7 +333,7 @@ const TodoList = () => {
 
       {/* Edit Modal */}
       <Modal isOpen={isEditModalOpen} onClose={onCloseEditModal} title="Edit this todo">
-        <form onSubmit={handleSubmit(onSubmit)}>
+        <form onSubmit={handleSubmit(onSubmitEditTodo)}>
         <div className="space-y-3">
             <div>
               <Input 
