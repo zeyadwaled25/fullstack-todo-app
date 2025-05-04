@@ -13,7 +13,7 @@ const useCustomQuery = ({queryKey, url, config}: IAuthenticatedQuery) => {
     queryKey,
     queryFn: async () => {
       const {data} = await axiosInstance.get(url, config)
-      return data.todos;
+      return data;
     }
   })
 }
